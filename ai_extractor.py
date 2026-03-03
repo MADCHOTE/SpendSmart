@@ -4,21 +4,18 @@ import json
 import re
 from dotenv import load_dotenv
 
-# Load .env file if it exists (local development)
-# On Railway, environment variables are set directly
+# Load .env file if exists (local only)
 load_dotenv()
 
-# Get API key from environment
+# Get API key — Railway injects this automatically!
 api_key = os.getenv("GROQ_API_KEY")
 
-if not api_key:
-    raise ValueError(
-        "GROQ_API_KEY not found! "
-        "Set it in .env file locally or "
-        "in Railway variables for deployment!"
-    )
+# Initialize client
+# Don't raise error at import time!
+# Let it fail only when actually called!
+client = Groq(api_key=api_key) if api_key else None
+import os
 
-client = Groq(api_key=api_key)
 
 # Updated with current working models!
 MODELS = [
@@ -66,6 +63,12 @@ def clean_json_response(text):
     return text
 
 def extract_transactions_with_ai(raw_text):
+     # Check API key here not at import time!
+    if client is None:
+        raise ValueError(
+            "GROQ_API_KEY not set! "
+            "Add it in Railway Variables!"
+        )
     """
     Sends raw text to Groq AI
     Extracts and classifies transactions
