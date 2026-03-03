@@ -4,9 +4,21 @@ import json
 import re
 from dotenv import load_dotenv
 
+# Load .env file if it exists (local development)
+# On Railway, environment variables are set directly
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# Get API key from environment
+api_key = os.getenv("GROQ_API_KEY")
+
+if not api_key:
+    raise ValueError(
+        "GROQ_API_KEY not found! "
+        "Set it in .env file locally or "
+        "in Railway variables for deployment!"
+    )
+
+client = Groq(api_key=api_key)
 
 # Updated with current working models!
 MODELS = [
