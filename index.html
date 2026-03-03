@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendSmart 💰</title>
+    <!-- Chart.js for beautiful charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: white;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .navbar h1 {
+            font-size: 22px;
+            color: #2d3748;
+        }
+
+        .navbar span {
+            font-size: 13px;
+            color: #718096;
+            margin-left: 12px;
+        }
+
+        /* ── MAIN CONTAINER ── */
+        .container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+
+        /* ── UPLOAD SECTION ── */
+        .upload-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .upload-card h2 {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .upload-card p {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .file-type-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .type-btn {
+            padding: 8px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            color: #4a5568;
+            transition: all 0.2s;
+        }
+
+        .type-btn.active {
+            border-color: #4299e1;
+            background: #ebf8ff;
+            color: #2b6cb0;
+            font-weight: bold;
+        }
+
+        .upload-box {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .upload-icon { font-size: 36px; }
+
+        .upload-box p {
+            color: #a0aec0;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        input[type="file"] { display: none; }
+
+        .file-name {
+            color: #48bb78;
+            font-size: 13px;
+            margin-bottom: 16px;
+            min-height: 20px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover { background: #2b6cb0; }
+        .submit-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        /* ── DASHBOARD SECTION ── */
+        .dashboard { display: none; }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .summary-card .icon { font-size: 28px; }
+
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3748;
+            margin: 8px 0 4px;
+        }
+
+        .summary-card .label {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .chart-card h3 {
+            color: #2d3748;
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        /* ── TRANSACTIONS TABLE ── */
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+
+        .table-card h3 {
+            color: #2d3748;
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f7fafc;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f4f8;
+            font-size: 14px;
+            color: #2d3748;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        .category-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #4299e1;
+            border: 2px solid #4299e1;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 32px;
+        }
+
+        .reset-btn:hover {
+            background: #ebf8ff;
+        }
+
+        /* ── LOADING ── */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+        }
+
+        .loading p { margin-top: 8px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>💰 SpendSmart</h1>
+    <span>Know where your money goes!</span>
+</div>
+
+<div class="container">
+
+    <!-- UPLOAD SECTION -->
+    <div class="upload-card" id="uploadSection">
+        <h2>Analyse Your Spending 🚀</h2>
+        <p>Upload your bank statement and instantly see where your money went!</p>
+
+        <div class="file-type-buttons">
+            <button class="type-btn active" onclick="selectType('pdf', this)">📄 PDF</button>
+            <button class="type-btn" onclick="selectType('csv', this)">📊 CSV</button>
+            <button class="type-btn" onclick="selectType('image', this)">📸 Screenshot</button>
+        </div>
+
+        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">⬆️</div>
+            <p>Click to upload your file</p>
+            <p>PDF, CSV or Screenshot accepted</p>
+        </div>
+
+        <input type="file" id="fileInput" onchange="showFileName()">
+        <div class="file-name" id="fileName">No file selected</div>
+
+        <button class="submit-btn" id="submitBtn" onclick="uploadFile()">
+            Analyse My Spending 🚀
+        </button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loadingSection">
+        <div style="font-size:40px">⏳</div>
+        <p>Analysing your transactions with AI...</p>
+        <p style="font-size:12px; margin-top:4px;">This takes a few seconds!</p>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard" id="dashboardSection">
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="icon">💸</div>
+                <div class="value" id="totalSpent">£0</div>
+                <div class="label">Total Spent</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">🧾</div>
+                <div class="value" id="totalTransactions">0</div>
+                <div class="label">Transactions</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">🏆</div>
+                <div class="value" id="topCategory">-</div>
+                <div class="label">Top Category</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <h3>📊 Spending by Category</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>📈 Amount by Category</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="table-card">
+            <h3>🧾 All Transactions</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTable">
+                </tbody>
+            </table>
+        </div>
+
+        <button class="reset-btn" onclick="resetApp()">
+            ⬆️ Upload Another Statement
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+    let selectedType = 'pdf';
+    let pieChartInstance = null;
+    let barChartInstance = null;
+
+    // Category colors
+    const CATEGORY_COLORS = {
+        'Food':          '#FF6384',
+        'Transport':     '#36A2EB',
+        'Shopping':      '#FFCE56',
+        'Entertainment': '#9B59B6',
+        'Healthcare':    '#2ECC71',
+        'Utilities':     '#E67E22',
+        'Rent':          '#E74C3C',
+        'Cash':          '#95A5A6',
+        'Other':         '#BDC3C7'
+    };
+
+    function selectType(type, btn) {
+        selectedType = type;
+        document.querySelectorAll('.type-btn')
+                .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const input = document.getElementById('fileInput');
+        if (type === 'pdf') input.accept = '.pdf';
+        else if (type === 'csv') input.accept = '.csv';
+        else input.accept = 'image/*';
+    }
+
+    function showFileName() {
+        const input = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        if (input.files.length > 0) {
+            fileName.textContent = '✅ ' + input.files[0].name;
+        }
+    }
+
+    async function uploadFile() {
+        const input = document.getElementById('fileInput');
+        if (input.files.length === 0) {
+            alert('Please select a file first!');
+            return;
+        }
+
+        // Show loading
+        document.getElementById('uploadSection').style.display = 'none';
+        document.getElementById('loadingSection').style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            const transactions = result.data.transactions;
+
+            // Hide loading, show dashboard
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+
+            // Render dashboard
+            renderDashboard(transactions);
+
+        } catch (error) {
+            alert('Something went wrong! Is your backend running?');
+            resetApp();
+        }
+    }
+
+    function renderDashboard(transactions) {
+
+        // ── Summary Cards ──
+        const total = transactions.reduce((s, t) => s + t.amount, 0);
+        document.getElementById('totalSpent').textContent =
+            '£' + total.toFixed(2);
+        document.getElementById('totalTransactions').textContent =
+            transactions.length;
+
+        // Group by category
+        const categoryTotals = {};
+        transactions.forEach(t => {
+            const cat = t.category || 'Other';
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + t.amount;
+        });
+
+        // Top category
+        const topCat = Object.entries(categoryTotals)
+            .sort((a, b) => b[1] - a[1])[0];
+        document.getElementById('topCategory').textContent =
+            topCat ? topCat[0] : '-';
+
+        const labels = Object.keys(categoryTotals);
+        const values = Object.values(categoryTotals);
+        const colors = labels.map(l =>
+            CATEGORY_COLORS[l] || '#BDC3C7');
+
+        // ── Pie Chart ──
+        if (pieChartInstance) pieChartInstance.destroy();
+        pieChartInstance = new Chart(
+            document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom',
+                        labels: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // ── Bar Chart ──
+        if (barChartInstance) barChartInstance.destroy();
+        barChartInstance = new Chart(
+            document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Amount Spent',
+                    data: values,
+                    backgroundColor: colors,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // ── Transactions Table ──
+        const tbody = document.getElementById('transactionsTable');
+        tbody.innerHTML = '';
+        transactions.forEach((t, i) => {
+            const color = CATEGORY_COLORS[t.category] || '#BDC3C7';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${t.description}</td>
+                    <td>
+                        <span class="category-badge"
+                            style="background:${color}22;
+                                   color:${color}">
+                            ${t.category}
+                        </span>
+                    </td>
+                    <td><strong>£${t.amount.toFixed(2)}</strong></td>
+                </tr>
+            `;
+        });
+    }
+
+    function resetApp() {
+        document.getElementById('uploadSection').style.display = 'block';
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('loadingSection').style.display = 'none';
+        document.getElementById('fileName').textContent = 'No file selected';
+        document.getElementById('fileInput').value = '';
+    }
+</script>
+
+</body>
+</html>
