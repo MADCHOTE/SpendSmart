@@ -59,32 +59,35 @@ def parse_csv(file_bytes):
 
 
 def parse_image(file_bytes):
+    def parse_image(file_bytes):
     """
     Reads text from screenshot using OCR
     Sends to AI for extraction
     """
-    import pytesseract
-    from PIL import Image
-    import io
+    try:
+        import pytesseract
+        from PIL import Image
+        import io
 
-    # Tell pytesseract where tesseract is installed
-    pytesseract.pytesseract.tesseract_cmd = (
-        r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-    )
+        # Only set this path on Windows!
+        import platform
+        if platform.system() == "Windows":
+            pytesseract.pytesseract.tesseract_cmd = (
+                r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+            )
 
-    # Open image from bytes
-    image = Image.open(io.BytesIO(file_bytes))
+        image = Image.open(io.BytesIO(file_bytes))
+        print(f"✅ Image loaded! Size: {image.size}")
 
-    print("✅ Image loaded successfully!")
-    print(f"📸 Image size: {image.size}")
+        raw_text = pytesseract.image_to_string(image)
+        print(f"✅ OCR extracted: {raw_text[:100]}")
 
-    # Extract text from image using OCR
-    raw_text = pytesseract.image_to_string(image)
+        transactions = extract_transactions_with_ai(raw_text)
+        return {"transactions": transactions}
 
-    print("✅ OCR text extracted!")
-    print(f"📄 Extracted text:\n{raw_text}")
-
-    # Send to AI extractor
-    transactions = extract_transactions_with_ai(raw_text)
-
-    return {"transactions": transactions}
+    except Exception as e:
+        print(f"⚠️ OCR failed: {str(e)}")
+        return {
+            "transactions": [],
+            "message": "OCR not available on this server!"
+        }
