@@ -1,7 +1,10 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from file_parser import parse_pdf, parse_csv, parse_image
 from database import init_db, save_upload, get_all_uploads
+import os
 
 app = FastAPI()
 
@@ -15,18 +18,20 @@ app.add_middleware(
 # Initialize database when app starts!
 init_db()
 
+# Serve static files (our frontend!)
+app.mount("/static", StaticFiles(directory="static"), 
+          name="static")
 
+# Home route → serve index.html!
 @app.get("/")
 def home():
-    return {"message": "SpendSmart is alive! 🚀"}
-
+    return FileResponse("static/index.html")
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
 
     contents = await file.read()
 
-    # Parse based on file type
     if file.filename.endswith('.pdf'):
         result = parse_pdf(contents)
         file_type = 'pdf'
@@ -42,7 +47,6 @@ async def upload_file(file: UploadFile = File(...)):
     else:
         return {"error": "Unsupported file type!"}
 
-    # Save to database!
     transactions = result['transactions']
     upload_id = save_upload(
         file.filename,
@@ -57,11 +61,7 @@ async def upload_file(file: UploadFile = File(...)):
         "data": result
     }
 
-
-# New endpoint to get upload history!
 @app.get("/history")
 def get_history():
     uploads = get_all_uploads()
-    return {
-        "uploads": uploads
-    }
+    return {"uploads": uploads}

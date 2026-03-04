@@ -419,9 +419,7 @@
         formData.append('file', input.files[0]);
 
         try {
-           const BASE_URL = window.location.protocol === 'file:'
-    ? 'http://127.0.0.1:8000'
-    : 'http://web-production-68e6dc.up.railway.app';
+           const BASE_URL = ' ';
 const response = await fetch(`${BASE_URL}/upload`, {
                 method: 'POST',
                 body: formData
